@@ -1,0 +1,9 @@
+.php_cs
+build
+coverage
+phpunit.xml
+psalm.xml
+testbench.yaml
+vendor
+node_modules
+*.cache
