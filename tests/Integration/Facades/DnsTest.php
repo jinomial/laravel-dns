@@ -9,6 +9,6 @@ const IPV6 = 'ipv6.localhost.jinomial.com'; // resolves to ::1
 uses()->group('facades');
 
 it('can resolve ' . IPV6, function () {
-    $response = Dns::query(IPV6, 'aaaa');
-    expect($response['Answer'][0]['data'])->toEqual('::1');
+    $response = Dns::query(IPV6, 'aaaa', ['async' => false]);
+    expect($response[0]['Answer'][0]['data'])->toEqual('::1');
 })->group('network');

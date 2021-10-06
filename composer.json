@@ -22,6 +22,7 @@
         "illuminate/contracts": "^8.37"
     },
     "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.2",
         "nunomaduro/collision": "^5.3",
         "orchestra/testbench": "^6.15",
         "pestphp/pest": "^1.18",
@@ -44,7 +45,8 @@
         "test": "./vendor/bin/pest --no-coverage",
         "test-unit": "./vendor/bin/pest --no-coverage --testsuite=unit",
         "test-integration": "./vendor/bin/pest --no-coverage --testsuite=integration",
-        "test-coverage": "phpdbg -qrr ./vendor/bin/pest"
+        "test-coverage": "phpdbg -qrr ./vendor/bin/pest",
+        "lint": "./vendor/bin/php-cs-fixer --config=.php_cs.dist.php --allow-risky=yes fix"
     },
     "config": {
         "sort-packages": true
