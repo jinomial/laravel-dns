@@ -1,6 +1,6 @@
 # Laravel DNS
 
-A DNS service for Laravel. Use the DNS over HTTPS (DoH) or native driver it includes or create your own custom driver.
+A DNS service for Laravel. Use the DNS over HTTPS (DoH) driver it includes or create your own custom driver.
 
 ## Installation
 
@@ -12,7 +12,7 @@ composer require jinomial/laravel-dns
 
 You can publish the config file with:
 ```bash
-php artisan vendor:publish --provider="Jinomial\LaravelDns\LaravelDnsServiceProvider" --tag="laravel-dns-config"
+php artisan vendor:publish --provider="Jinomial\LaravelDns\DnsServiceProvider" --tag="laravel-dns-config"
 ```
 
 This is the contents of the published config file:

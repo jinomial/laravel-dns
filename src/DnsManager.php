@@ -46,7 +46,7 @@ class DnsManager implements FactoryContract
      * Get a socket instance by name.
      *
      * @param  string|null  $name
-     * @return \App\Contracts\Dns\Socket
+     * @return \Jinomial\LaravelDns\Contracts\Dns\Socket
      */
     public function socket($name = null)
     {
@@ -59,7 +59,7 @@ class DnsManager implements FactoryContract
      * Attempt to get the DNS socket from the local cache.
      *
      * @param  string  $name
-     * @return \App\Contracts\Dns\Socket
+     * @return \Jinomial\LaravelDns\Contracts\Dns\Socket
      */
     protected function get($name)
     {
@@ -70,7 +70,7 @@ class DnsManager implements FactoryContract
      * Resolve the given DNS socket.
      *
      * @param  string  $name
-     * @return \App\Contracts\Dns\Socket
+     * @return \Jinomial\LaravelDns\Contracts\Dns\Socket
      *
      * @throws \InvalidArgumentException
      */
@@ -111,7 +111,7 @@ class DnsManager implements FactoryContract
      *
      * @param  string $name
      * @param  array  $config
-     * @return \App\Contracts\Dns\Socket
+     * @return \Jinomial\LaravelDns\Contracts\Dns\Socket
      */
     protected function createDohDriver($name, array $config)
     {
@@ -138,7 +138,7 @@ class DnsManager implements FactoryContract
     }
 
     /**
-     * Get the mail connection configuration.
+     * Get the DNS socket configuration.
      *
      * @param  string  $name
      * @return array
@@ -149,7 +149,7 @@ class DnsManager implements FactoryContract
     }
 
     /**
-     * Get the default mail driver name.
+     * Get the default DNS socket name.
      *
      * @return string
      */
@@ -159,7 +159,7 @@ class DnsManager implements FactoryContract
     }
 
     /**
-     * Set the default socket driver name.
+     * Set the default DNS socket name.
      *
      * @param  string  $name
      * @return void

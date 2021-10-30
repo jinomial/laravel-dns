@@ -5,7 +5,7 @@ namespace Jinomial\LaravelDns\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Jinomial\LaravelDns\LaravelDns
+ * @see \Jinomial\LaravelDns\DnsManager
  */
 class Dns extends Facade
 {

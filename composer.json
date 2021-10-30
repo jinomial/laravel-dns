@@ -57,7 +57,7 @@
                 "Jinomial\\LaravelDns\\DnsServiceProvider"
             ],
             "aliases": {
-                "LaravelDns": "Jinomial\\LaravelDns\\Facades\\Dns"
+                "Dns": "Jinomial\\LaravelDns\\Facades\\Dns"
             }
         }
     },

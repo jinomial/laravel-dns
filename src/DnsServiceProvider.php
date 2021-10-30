@@ -33,7 +33,7 @@ class DnsServiceProvider extends ServiceProvider implements DeferrableProvider
         // Publish configuration files.
         $this->publishes([
             __DIR__.'/../config/dns.php' => config_path('dns.php'),
-        ]);
+        ], 'laravel-dns-config');
 
         // Register console commands.
         if ($this->app->runningInConsole()) {
