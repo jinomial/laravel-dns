@@ -10,5 +10,6 @@ uses()->group('facades');
 
 it('can resolve ' . IPV6, function () {
     $response = Dns::query(IPV6, 'aaaa', ['async' => false]);
+
     expect($response[0]['Answer'][0]['data'])->toEqual('::1');
 })->group('network');

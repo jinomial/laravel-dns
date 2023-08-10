@@ -4,51 +4,41 @@ namespace Jinomial\LaravelDns;
 
 use Closure;
 use GuzzleHttp\Client as HttpClient;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Jinomial\LaravelDns\Contracts\Dns\Factory as FactoryContract;
+use Jinomial\LaravelDns\Contracts\Dns\Socket;
 
 class DnsManager implements FactoryContract
 {
     /**
      * The application instance.
-     *
-     * @var \Illuminate\Contracts\Foundation\Application
      */
-    protected $app;
+    protected Application|array $app;
 
     /**
      * The array of resolved sockets.
-     *
-     * @var array
      */
-    protected $sockets = [];
+    protected array $sockets = [];
 
     /**
      * The registered custom driver creators.
-     *
-     * @var array
      */
-    protected $customCreators = [];
+    protected array $customCreators = [];
 
     /**
      * Create a new DNS manager instance.
-     *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
-     * @return void
      */
-    public function __construct($app)
+    public function __construct(Application|array $app)
     {
         $this->app = $app;
     }
 
     /**
      * Get a socket instance by name.
-     *
-     * @param  string|null  $name
-     * @return \Jinomial\LaravelDns\Contracts\Dns\Socket
      */
-    public function socket($name = null)
+    public function socket(?string $name = null): Socket
     {
         $name = $name ?: $this->getDefaultSocket();
 
@@ -57,11 +47,8 @@ class DnsManager implements FactoryContract
 
     /**
      * Attempt to get the DNS socket from the local cache.
-     *
-     * @param  string  $name
-     * @return \Jinomial\LaravelDns\Contracts\Dns\Socket
      */
-    protected function get($name)
+    protected function get(string $name): Socket
     {
         return $this->sockets[$name] ?? $this->resolve($name);
     }
@@ -69,12 +56,9 @@ class DnsManager implements FactoryContract
     /**
      * Resolve the given DNS socket.
      *
-     * @param  string  $name
-     * @return \Jinomial\LaravelDns\Contracts\Dns\Socket
-     *
      * @throws \InvalidArgumentException
      */
-    protected function resolve($name)
+    protected function resolve(string $name): Socket
     {
         $config = $this->getConfig($name);
 
@@ -98,22 +82,17 @@ class DnsManager implements FactoryContract
     /**
      * Call a custom driver creator.
      *
-     * @param  array  $config
      * @return mixed
      */
-    protected function callCustomCreator($name, array $config)
+    protected function callCustomCreator(string $name, array $config)
     {
         return $this->customCreators[$config['driver']]($this->app, $name, $config);
     }
 
     /**
      * Create an instance of the DNS over HTTPS driver.
-     *
-     * @param  string $name
-     * @param  array  $config
-     * @return \Jinomial\LaravelDns\Contracts\Dns\Socket
      */
-    protected function createDohDriver($name, array $config)
+    protected function createDohDriver(string $name, array $config): Socket
     {
         return new Sockets\DnsOverHttps(
             $name,
@@ -123,12 +102,17 @@ class DnsManager implements FactoryContract
     }
 
     /**
-     * Get a fresh Guzzle HTTP client instance.
-     *
-     * @param  array  $config
-     * @return \GuzzleHttp\Client
+     * Create an instance of the DNS over HTTPS driver.
      */
-    protected function guzzle(array $config)
+    protected function createSystemDriver(string $name, array $config): Socket
+    {
+        return new Sockets\DnsResolver($name);
+    }
+
+    /**
+     * Get a fresh Guzzle HTTP client instance.
+     */
+    protected function guzzle(array $config): HttpClient
     {
         return new HttpClient(Arr::add(
             $config['guzzle'] ?? [],
@@ -139,44 +123,32 @@ class DnsManager implements FactoryContract
 
     /**
      * Get the DNS socket configuration.
-     *
-     * @param  string  $name
-     * @return array
      */
-    protected function getConfig(string $name)
+    protected function getConfig(string $name): ?array
     {
         return $this->app['config']["dns.sockets.{$name}"];
     }
 
     /**
      * Get the default DNS socket name.
-     *
-     * @return string
      */
-    public function getDefaultSocket()
+    public function getDefaultSocket(): string
     {
         return $this->app['config']['dns.default'];
     }
 
     /**
      * Set the default DNS socket name.
-     *
-     * @param  string  $name
-     * @return void
      */
-    public function setDefaultSocket(string $name)
+    public function setDefaultSocket(string $name): void
     {
         $this->app['config']['dns.default'] = $name;
     }
 
     /**
      * Register a custom driver creator Closure.
-     *
-     * @param  string  $driver
-     * @param  \Closure  $callback
-     * @return $this
      */
-    public function extend($driver, Closure $callback)
+    public function extend(string $driver, Closure $callback): DnsManager
     {
         $this->customCreators[$driver] = $callback;
 
@@ -185,11 +157,8 @@ class DnsManager implements FactoryContract
 
     /**
      * Disconnect the given socket and remove from local cache.
-     *
-     * @param  string|null  $name
-     * @return void
      */
-    public function purge($name = null)
+    public function purge(?string $name = null): void
     {
         $name = $name ?: $this->getDefaultSocket();
 
@@ -198,21 +167,16 @@ class DnsManager implements FactoryContract
 
     /**
      * Get the application instance used by the manager.
-     *
-     * @return \Illuminate\Contracts\Foundation\Application
      */
-    public function getApplication()
+    public function getApplication(): Application|array
     {
         return $this->app;
     }
 
     /**
      * Set the application instance used by the manager.
-     *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
-     * @return $this
      */
-    public function setApplication($app)
+    public function setApplication(Application|array $app): DnsManager
     {
         $this->app = $app;
 
@@ -221,10 +185,8 @@ class DnsManager implements FactoryContract
 
     /**
      * Forget all of the resolved socket instances.
-     *
-     * @return $this
      */
-    public function forgetSockets()
+    public function forgetSockets(): DnsManager
     {
         $this->sockets = [];
 
@@ -234,11 +196,9 @@ class DnsManager implements FactoryContract
     /**
      * Dynamically call the default driver instance.
      *
-     * @param  string  $method
-     * @param  array  $parameters
      * @return mixed
      */
-    public function __call($method, $parameters)
+    public function __call(string $method, array $parameters)
     {
         return $this->socket()->$method(...$parameters);
     }

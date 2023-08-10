@@ -8,8 +8,6 @@ abstract class Socket implements SocketContract
 {
     /**
      * The name that is configured for the socket.
-     *
-     * @var string
      */
-    protected $name;
+    protected string $name;
 }

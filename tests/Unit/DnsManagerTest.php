@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use Jinomial\LaravelDns\DnsManager;
 use Jinomial\LaravelDns\Sockets\DnsOverHttps;
 use Jinomial\LaravelDns\Sockets\Socket;
+use Mockery;
 
 uses()->group('manager');
 
@@ -152,7 +153,7 @@ test('DNSManager custom creators overwrite existing creators', function () {
     $app = ['config' => $config];
     $manager = new DnsManager($app);
     // Extend the manager to overwrite the doh driver.
-    $overwrittenSocket = 'overwritten-doh-driver';
+    $overwrittenSocket = Mockery::mock(Socket::class);
     $manager->extend(
         'doh',
         fn ($theApp, $theName, $theConfig) => $overwrittenSocket
@@ -206,7 +207,8 @@ test('DNSManager can purge cached sockets', function () {
     $socket = $manager->socket('defined-socket');
 
     // Extend the manager to overwrite the doh driver.
-    $overwrittenSocket = uniqid();
+    $overwrittenSocket = Mockery::mock(Socket::class);
+    ;
     $manager->extend(
         'doh',
         fn ($theApp, $theName, $theConfig) => $overwrittenSocket
@@ -272,11 +274,11 @@ test('DNSManager can forget all sockets', function () {
     // Extend the manager to support the custom drivers.
     $manager->extend(
         $driver1,
-        fn ($theApp, $theName, $theConfig) => $driver1
+        fn ($theApp, $theName, $theConfig) => Mockery::mock(Socket::class)
     );
     $manager->extend(
         $driver2,
-        fn ($theApp, $theName, $theConfig) => $driver2
+        fn ($theApp, $theName, $theConfig) => Mockery::mock(Socket::class)
     );
 
     // Get both sockets so now both are cached.
@@ -284,12 +286,12 @@ test('DNSManager can forget all sockets', function () {
     $manager->socket('defined-socket-2');
 
     // Extend the manager to overwrite the driver creators.
-    $newSocket1 = uniqid();
+    $newSocket1 = Mockery::mock(Socket::class);
     $manager->extend(
         $driver1,
         fn ($theApp, $theName, $theConfig) => $newSocket1
     );
-    $newSocket2 = uniqid();
+    $newSocket2 = Mockery::mock(Socket::class);
     $manager->extend(
         $driver2,
         fn ($theApp, $theName, $theConfig) => $newSocket2
@@ -318,10 +320,8 @@ test('DNSManager can dynamically call the default driver', function () {
     $manager = new DnsManager($app);
 
     // Extend the manager to support the custom driver.
-    $dynamicCallResponse = uniqid();
-    $socket = mock(Socket::class)->expect(
-        mycall: fn () => $dynamicCallResponse,
-    );
+    $socket = Mockery::mock(Socket::class);
+    $socket->shouldReceive('mycall')->once();
     $manager->extend(
         $driver,
         fn ($theApp, $theName, $theConfig) => $socket

@@ -2,6 +2,7 @@
 
 namespace Jinomial\LaravelDns\Sockets;
 
+use Generator;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7\Request;
@@ -50,26 +51,18 @@ class DnsOverHttps extends Socket implements SocketContract
 
     /**
      * Guzzle client instance.
-     *
-     * @var \GuzzleHttp\ClientInterface
      */
-    protected $client;
+    protected ClientInterface $client;
 
     /**
      * The DNS over HTTPS API endpoint.
-     *
-     * @var string
      */
-    protected $endpoint;
+    protected string $endpoint;
 
     /**
      * Create a new DNS socket instance.
-     *
-     * @param  \GuzzleHttp\ClientInterface  $client
-     * @param  string|null  $endpoint
-     * @return void
      */
-    public function __construct($name, ClientInterface $client, $endpoint = null)
+    public function __construct(string $name, ClientInterface $client, ?string $endpoint = null)
     {
         $this->name = $name;
         $this->client = $client;
@@ -82,13 +75,8 @@ class DnsOverHttps extends Socket implements SocketContract
      * https://developers.cloudflare.com/1.1.1.1/encrypted-dns/dns-over-https/make-api-requests
      * Cloudflare supports GET requests for JSON or POST for wireformat.
      * GET requests should include a 'ct' param.
-     *
-     * @param string|array $name
-     * @param string $type
-     * @param array $options
-     * @return array
      */
-    public function query($name, $type = 'A', array $options = [])
+    public function query(string|array $name, string|null $type = 'A', array $options = []): array
     {
         if (! is_array($name)) {
             $name = [['name' => $name, 'type' => $type]];
@@ -99,11 +87,8 @@ class DnsOverHttps extends Socket implements SocketContract
 
     /**
      * Parse a response into JSON.
-     *
-     * @param \GuzzleHttp\PSR7\Response $response
-     * @return array
      */
-    public function unwrap(array $promises, $throwOnError = null)
+    public function unwrap(array $promises, bool $throwOnError = false)
     {
         $responses = Promise\Utils::unwrap($promises);
         $results = array_map(
@@ -116,11 +101,8 @@ class DnsOverHttps extends Socket implements SocketContract
 
     /**
      * Parse a response into JSON.
-     *
-     * @param \GuzzleHttp\PSR7\Response $response
-     * @return array|false
      */
-    public function handleResponse(Response $response, $throwOnError = true)
+    public function handleResponse(Response $response, bool $throwOnError = true): array|false|null
     {
         if ($response->getReasonPhrase() !== 'OK') {
             return null;
@@ -139,12 +121,8 @@ class DnsOverHttps extends Socket implements SocketContract
 
     /**
      * Make HTTP requests for each lookup question.
-     *
-     * @param array $questions
-     * @param array $options
-     * @return array
      */
-    protected function sendRequests(array $questions, array $options)
+    protected function sendRequests(array $questions, array $options): array
     {
         $async = $options[DnsOverHttps::OPTION_ASYNC] ??
             DnsOverHttps::OPTION_ASYNC_DEFAULT;
@@ -171,22 +149,16 @@ class DnsOverHttps extends Socket implements SocketContract
     /**
      * Create a PSR-7 Request with the query options.
      *
-     * @param string $name
-     * @param string $type
-     * @param bool $do
-     * @param bool $cd
-     * @param string|null $accept
-     * @param string|null $ct
      * @see https://developers.cloudflare.com/1.1.1.1/encrypted-dns/dns-over-https/make-api-requests/dns-json
      */
     protected function makeMessage(
-        $name,
-        $type,
-        $do,
-        $cd,
-        $accept = null,
-        $ct = null
-    ) {
+        string $name,
+        string $type,
+        bool $do,
+        bool $cd,
+        ?string $accept = null,
+        ?string $ct = null
+    ): Request {
         $headers = [
             'Accept' => $accept ?? DnsOverHttps::OPTION_ACCEPT_DEFAULT,
             'Content-Type' => $ct ?? DnsOverHttps::OPTION_CT_DEFAULT,
@@ -206,12 +178,8 @@ class DnsOverHttps extends Socket implements SocketContract
 
     /**
      * Yield PSR7 requests for each question.
-     *
-     * @param array $questions
-     * @param array $options
-     * @return \Generator
      */
-    protected function messages(array $questions, array $options = [])
+    protected function messages(array $questions, array $options = []): Generator
     {
         // Get options or set them to their default value.
         $throwOnError = $options[DnsOverHttps::OPTION_THROW_ON_ERROR] ??

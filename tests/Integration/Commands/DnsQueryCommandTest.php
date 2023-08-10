@@ -14,5 +14,6 @@ test('Artisan command can resolve ' . IPV6, function () {
         'name' => IPV6,
         'type' => 'aaaa',
     ]);
+
     expect($exitCode)->toEqual(0);
 })->group('network');

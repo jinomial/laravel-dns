@@ -7,5 +7,5 @@ interface Socket
     /**
      * Perform a DNS lookup.
      */
-    public function query($name, $type = 'A', array $options = []);
+    public function query(string|array $name, string|null $type = 'A', array $options = []): array;
 }
