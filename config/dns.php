@@ -24,7 +24,7 @@ return [
     | plus their respective settings. Several examples have been configured for
     | you and you are free to add your own as your application requires.
     |
-    | Supported: "doh"
+    | Supported: "doh", "system",
     |
     */
 

@@ -42,7 +42,7 @@ return [
     | plus their respective settings. Several examples have been configured for
     | you and you are free to add your own as your application requires.
     |
-    | Supported: "doh"
+    | Supported: "doh", "system",
     |
     */
 
@@ -56,13 +56,23 @@ return [
                 'verify' => false,
             ]
         ],
+        'system' => [
+            'driver' => 'system',
+        ],
     ],
 
 ];
-
 ```
 
 ## Usage
+
+The response depends on the driver that is used.
+
+### doh driver responses
+
+The *doh* driver uses Cloudflare's DNS over HTTPs with JSON for lookups.
+
+See the [response documentation](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/make-api-requests/dns-json/) for details about the response format.
 
 ```php
 $response = Dns::query('ipv6.localhost.jinomial.com', 'aaaa');
@@ -99,6 +109,54 @@ print_r($response);
 //         )
 //
 // )
+```
+
+### system driver responses
+
+The *system* driver uses PHP's `dns_get_record` method for lookups.
+
+See the [dns_get_record documentation](https://www.php.net/manual/en/function.dns-get-record.php) for details about the response format.
+
+```php
+$response = Dns::query('ipv6.localhost.jinomial.com', 'aaaa');
+print_r($response);
+
+// Array
+// (
+//     [0] => Array
+//         (
+//             [host] => ipv6.localhost.jinomial.com
+//             [class] => IN
+//             [ttl] => 377
+//             [type] => AAAA
+//             [ipv6] => ::1
+//         )
+//
+// )
+```
+
+## Batch Queries
+
+Multiple lookups can be performed at once.
+
+```php
+$response = Dns::query([
+    [
+        'name' => 'ipv6.localhost.jinomial.com',
+        'type' => 'AAAA',
+    ],
+    [
+        'name' => 'ipv4.localhost.jinomial.com',
+        'type' => 'A',
+    ],
+]);
+```
+
+The *doh* driver supports asynchronous queries.
+
+```php
+$promises = Dns::query($queries, null, ['async' => true]);
+$response = Dns::unwrap($promises);
 ```
 
 ## Testing
