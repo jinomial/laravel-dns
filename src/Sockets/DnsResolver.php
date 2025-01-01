@@ -20,7 +20,9 @@ class DnsResolver extends Socket implements SocketContract
     public function query(string|array $name, string|null $type = 'A', array $options = []): array
     {
         if (! is_array($name)) {
-            return dns_get_record($name, constant('DNS_' . strtoupper($type)));
+            $recordTypeKey = strtoupper($type ?? 'A');
+
+            return dns_get_record($name, constant('DNS_' . $recordTypeKey));
         }
 
         $results = [];

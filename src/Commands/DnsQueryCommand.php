@@ -21,8 +21,10 @@ class DnsQueryCommand extends Command
 
     /**
      * Execute the console command.
+     *
+     * @api
      */
-    public function handle()
+    public function handle(): int
     {
         $name = $this->argument('name');
         $type = $this->argument('type');

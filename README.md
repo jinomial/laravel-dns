@@ -179,6 +179,7 @@ Tests are grouped into the following groups:
 - network
 - drivers
 - doh
+- system
 - manager
 - facades
 - commands

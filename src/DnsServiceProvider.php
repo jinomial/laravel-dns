@@ -2,25 +2,26 @@
 
 namespace Jinomial\LaravelDns;
 
-use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Jinomial\LaravelDns\Commands\DnsQueryCommand;
 
-class DnsServiceProvider extends ServiceProvider implements DeferrableProvider
+/**
+ * @api
+ */
+class DnsServiceProvider extends ServiceProvider
 {
     /**
      * Register the service provider.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom(
             __DIR__.'/../config/dns.php',
             'dns'
         );
 
-        $this->app->singleton('dns', function ($app) {
+        $this->app->singleton(DnsManager::class, function (Application $app) {
             return new DnsManager($app);
         });
     }
@@ -28,7 +29,7 @@ class DnsServiceProvider extends ServiceProvider implements DeferrableProvider
     /**
      * Bootstrap package services.
      */
-    public function boot()
+    public function boot(): void
     {
         // Publish configuration files.
         $this->publishes([
@@ -41,17 +42,5 @@ class DnsServiceProvider extends ServiceProvider implements DeferrableProvider
                 DnsQueryCommand::class,
             ]);
         }
-    }
-
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return [
-            'dns',
-        ];
     }
 }

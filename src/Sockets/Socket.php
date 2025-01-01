@@ -8,6 +8,8 @@ abstract class Socket implements SocketContract
 {
     /**
      * The name that is configured for the socket.
+     *
+     * @psalm-suppress PossiblyUnusedProperty
      */
     protected string $name;
 }

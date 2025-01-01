@@ -10,6 +10,7 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Uri;
 use InvalidArgumentException;
 use Jinomial\LaravelDns\Contracts\Dns\Socket as SocketContract;
+use Psr\Http\Message\ResponseInterface;
 
 class DnsOverHttps extends Socket implements SocketContract
 {
@@ -87,8 +88,10 @@ class DnsOverHttps extends Socket implements SocketContract
 
     /**
      * Parse a response into JSON.
+     *
+     * @api
      */
-    public function unwrap(array $promises, bool $throwOnError = false)
+    public function unwrap(iterable $promises, bool $throwOnError = false): array
     {
         $responses = Promise\Utils::unwrap($promises);
         $results = array_map(
@@ -102,7 +105,7 @@ class DnsOverHttps extends Socket implements SocketContract
     /**
      * Parse a response into JSON.
      */
-    public function handleResponse(Response $response, bool $throwOnError = true): array|false|null
+    public function handleResponse(ResponseInterface $response, bool $throwOnError = true): array|false|null
     {
         if ($response->getReasonPhrase() !== 'OK') {
             return null;
@@ -110,7 +113,7 @@ class DnsOverHttps extends Socket implements SocketContract
 
         $bodyRaw = $response->getBody();
         $body = json_decode(
-            $bodyRaw,
+            (string)$bodyRaw,
             true,
             512,
             $throwOnError ? JSON_THROW_ON_ERROR : 0
@@ -166,8 +169,8 @@ class DnsOverHttps extends Socket implements SocketContract
         $data = array_filter([
             'name' => $name,
             'type' => $type,
-            'do' => $do,
-            'cd' => $cd,
+            'do' => $do ? '1' : '0',
+            'cd' => $cd ? '1' : '0',
             'ct' => $ct ?? DnsOverHttps::OPTION_CT_DEFAULT,
         ]);
         $uri = Uri::withQueryValues(new Uri($this->endpoint), $data);

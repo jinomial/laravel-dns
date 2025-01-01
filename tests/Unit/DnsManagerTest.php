@@ -2,7 +2,8 @@
 
 namespace Jinomial\LaravelDns\Tests\Unit;
 
-use Illuminate\Config\Repository;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Config;
 use InvalidArgumentException;
 use Jinomial\LaravelDns\DnsManager;
 use Jinomial\LaravelDns\Sockets\DnsOverHttps;
@@ -12,20 +13,20 @@ use Mockery;
 uses()->group('manager');
 
 test('DNSManager constructs', function () {
-    $app = [];
+    $app = Application::configure()->create();
     $manager = new DnsManager($app);
     expect($manager)->toBeInstanceOf(DnsManager::class);
 });
 
 test('DNSManager can get application', function () {
-    $app = [uniqid()];
+    $app = Application::configure()->create();
     $manager = new DnsManager($app);
     expect($manager->getApplication())->toEqual($app);
 });
 
 test('DNSManager application can be set', function () {
-    $app = [];
-    $newApp = [uniqid()];
+    $app = Config::getFacadeApplication();
+    $newApp = Application::configure()->create();
     $manager = new DnsManager($app);
     $manager->setApplication($newApp);
     expect($manager->getApplication())->toEqual($newApp);
@@ -33,17 +34,15 @@ test('DNSManager application can be set', function () {
 
 test('DNSManager can get default socket name', function () {
     $name = uniqid();
-    $config = new Repository(['dns' => ['default' => $name]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $config = Config::set(['dns' => ['default' => $name]]);
+    $manager = new DnsManager(Config::getFacadeApplication());
     expect($manager->getDefaultSocket())->toEqual($name);
 });
 
 test('DNSManager can set default socket name', function () {
     $name = uniqid();
-    $config = new Repository(['dns' => ['default' => 'socket']]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $config = Config::set(['dns' => ['default' => 'socket']]);
+    $manager = new DnsManager(Config::getFacadeApplication());
     $manager->setDefaultSocket($name);
     expect($manager->getDefaultSocket())->toEqual($name);
 });
@@ -52,28 +51,26 @@ test('DNSManager gets a socket by name', function () {
     // doh is a real driver that is created by the function
     // DnsManager::createDohDriver()
     $socketConfig = ['driver' => 'doh'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'mysocket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
     $socket = $manager->socket('mysocket');
     expect($socket)->toBeInstanceOf(Socket::class);
 });
 
 test('DNSManager supports doh driver', function () {
     $socketConfig = ['driver' => 'doh'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'mysocket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
     $socket = $manager->socket('mysocket');
     expect($socket)->toBeInstanceOf(DnsOverHttps::class);
 });
@@ -82,25 +79,23 @@ test('DNSManager gets a default socket when not specified', function () {
     // doh is a real driver that is created by the function
     // DnsManager::createDohDriver()
     $socketConfig = ['driver' => 'doh'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'my-default-socket',
         'sockets' => [
             'my-default-socket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
     $socket = $manager->socket();
     expect($socket)->toBeInstanceOf(Socket::class);
 });
 
 test('DNSManager throws error when socket not configured', function () {
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
     $socket = $manager->socket('unconfigured-socket');
 })->throws(InvalidArgumentException::class);
 
@@ -108,14 +103,13 @@ test('DNSManager throws error when a socket driver is not supported', function (
     // fake is a fake driver that can't be created because the function
     // DnsManager::createFakeDriver() doesn't exist.
     $socketConfig = ['driver' => 'fake'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'defined-socket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
     $socket = $manager->socket('defined-socket');
 })->throws(InvalidArgumentException::class);
 
@@ -123,14 +117,13 @@ test('DNSManager can be extended with custom driver creators', function () {
     // custom is a driver that can't be created because the function
     // DnsManager::createCustomDriver() doesn't exist.
     $socketConfig = ['driver' => 'custom'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'defined-socket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
     // Extend the manager with a driver called 'custom'.
     $manager->extend(
         'custom',
@@ -144,14 +137,13 @@ test('DNSManager custom creators overwrite existing creators', function () {
     // doh is a real driver that can be created because the function
     // DnsManager::createDohDriver() exists.
     $socketConfig = ['driver' => 'doh'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'defined-socket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
     // Extend the manager to overwrite the doh driver.
     $overwrittenSocket = Mockery::mock(Socket::class);
     $manager->extend(
@@ -166,14 +158,13 @@ test('DNSManager caches sockets locally by name', function () {
     // doh is a real driver that can be created because the function
     // DnsManager::createDohDriver() exists.
     $socketConfig = ['driver' => 'doh'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'defined-socket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
 
     // Get the socket so now it is cached.
     $socket = $manager->socket('defined-socket');
@@ -194,14 +185,13 @@ test('DNSManager can purge cached sockets', function () {
     // doh is a real driver that can be created because the function
     // DnsManager::createDohDriver() exists.
     $socketConfig = ['driver' => 'doh'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'defined-socket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
 
     // Get the doh socket so now it is cached.
     $socket = $manager->socket('defined-socket');
@@ -227,14 +217,13 @@ test('DNSManager purges by name and not driver', function () {
     // doh is a real driver that can be created because the function
     // DnsManager::createDohDriver() exists.
     $socketConfig = ['driver' => 'doh'];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'defined-socket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
 
     // Get the socket so now it is cached.
     $socket = $manager->socket('defined-socket');
@@ -261,15 +250,14 @@ test('DNSManager can forget all sockets', function () {
     $driver2 = uniqid();
     $socketConfig1 = ['driver' => $driver1];
     $socketConfig2 = ['driver' => $driver2];
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'no-default-socket',
         'sockets' => [
             'defined-socket-1' => $socketConfig1,
             'defined-socket-2' => $socketConfig2,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
 
     // Extend the manager to support the custom drivers.
     $manager->extend(
@@ -310,14 +298,13 @@ test('DNSManager can dynamically call the default driver', function () {
     $driver = uniqid();
     $socketConfig = ['driver' => $driver];
     // The socket that will be used is the default socket "default-socket".
-    $config = new Repository(['dns' => [
+    $config = Config::set(['dns' => [
         'default' => 'default-socket',
         'sockets' => [
             'default-socket' => $socketConfig,
         ],
     ]]);
-    $app = ['config' => $config];
-    $manager = new DnsManager($app);
+    $manager = new DnsManager(Config::getFacadeApplication());
 
     // Extend the manager to support the custom driver.
     $socket = Mockery::mock(Socket::class);
