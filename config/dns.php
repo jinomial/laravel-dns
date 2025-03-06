@@ -35,7 +35,7 @@ return [
             'guzzle' => [
                 'connect_timeout' => 0,
                 'timeout' => 0,
-                'verify' => false,
+                'verify' => true,
             ]
         ],
         'system' => [

@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-dns` will be documented in this file.
 
+## 3.1.0 - 2025-03-05
+
+- Update for Laravel 12.x
+
 ## 3.0.0 - 2025-01-01
 
 - Update for Laravel 11.x

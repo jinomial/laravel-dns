@@ -19,11 +19,11 @@
     "require": {
         "php": "8.2 - 8.4",
         "guzzlehttp/guzzle": "^7.9",
-        "illuminate/contracts": "^11.36"
+        "illuminate/contracts": "^11.44 || ^12.1"
     },
     "require-dev": {
         "mockery/mockery": "^1.6",
-        "orchestra/testbench": "^9.9",
+        "orchestra/testbench": "^9.11 || ^10.0",
         "pestphp/pest": "^3.7",
         "pestphp/pest-plugin-laravel": "^3.0"
     },
